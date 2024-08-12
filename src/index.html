@@ -10,17 +10,14 @@
       <h1>Weather</h1>
       <form action="" method="post">
         <input type="text" name="location-input" id="location-input" />
-        <input
-          type="submit"
-          name="search-button"
-          id="search-button"
-          value="LOAD"
-        />
+        <input type="submit" name="load-button" id="load-button" value="LOAD" />
+        <button type="button" class="unit-button celsius">°C</button>
+        <button type="button" class="unit-button fahrenheit">°F</button>
       </form>
     </header>
     <main>
       <div class="current-weather">
-        <p>Now</p>
+        <p class="bold">Now</p>
         <div class="basic-info">
           <img src="" alt="" class="current-weather-icon" />
           <p class="current-temp"></p>
@@ -34,14 +31,14 @@
           </li>
           <li class="humidity">
             <span class="bold">Humidity</span>
-            <span class="value"></span> %
+            <span class="value"></span>%
           </li>
           <li class="wind">
             <span class="bold">Wind</span> <span class="value"></span>
           </li>
           <li class="precip-prob">
             <span class="bold">Precipation probability</span>
-            <span class="value"></span> %
+            <span class="value"></span>%
           </li>
         </ul>
       </div>

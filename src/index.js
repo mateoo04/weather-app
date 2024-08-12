@@ -12,6 +12,8 @@ import { format, isBefore, isToday, isTomorrow, addDays } from 'date-fns';
 
 const locationForm = document.querySelector('form');
 const locationInput = document.getElementById('location-input');
+const celsius = document.querySelector('.celsius');
+const fahrenheit = document.querySelector('.fahrenheit');
 
 let location = 'Zagreb';
 let unit = 'metric';
@@ -42,6 +44,7 @@ const getIcon = function getCorrespondingWeatherIcon(weather) {
 };
 
 function formatDate(dateString) {
+  //new Date() returns today
   const sevenDaysFromToday = addDays(new Date(), 6);
 
   const year = dateString.slice(0, 4);
@@ -59,6 +62,36 @@ function formatDate(dateString) {
   } else {
     return format(newDate, 'do MMM y');
   }
+}
+
+function setBackgroundColor(weather) {
+  const main = document.querySelector('main');
+  const header = document.querySelector('header');
+
+  if (weather === 'partly-cloudy-day' || weather === 'clear-day') {
+    main.style.backgroundColor = '#1096e3';
+    header.style.backgroundColor = '#1096e3';
+  } else if (weather === 'partly-cloudy-night' || weather === 'clear-night') {
+    main.style.backgroundColor = '#005a9e';
+    header.style.backgroundColor = '#005a9e';
+  } else {
+    main.style.backgroundColor = '#7a1c94';
+    header.style.backgroundColor = '#7a1c94';
+  }
+}
+
+function switchUnit(chosenUnit) {
+  if (chosenUnit === 'metric') {
+    unit = 'metric';
+    fahrenheit.style.fontWeight = 'normal';
+    celsius.style.fontWeight = '600';
+  } else if (chosenUnit === 'us') {
+    unit = 'us';
+    celsius.style.fontWeight = 'normal';
+    fahrenheit.style.fontWeight = '600';
+  }
+
+  displayWeather();
 }
 
 const getData = async function getWeatherData() {
@@ -127,10 +160,10 @@ function displayWeather() {
     currentHumdity.textContent = data.current.humidity;
     currentWind.textContent = data.current.windspeed;
     currentPrecipProb.textContent = data.current.precipprob;
+
+    setBackgroundColor(data.current.icon);
   });
 }
-
-displayWeather();
 
 locationForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -138,3 +171,13 @@ locationForm.addEventListener('submit', (event) => {
   location = locationInput.value;
   displayWeather();
 });
+
+celsius.addEventListener('click', () => {
+  switchUnit('metric');
+});
+
+fahrenheit.addEventListener('click', () => {
+  switchUnit('us');
+});
+
+switchUnit('metric');
