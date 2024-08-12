@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather</title>
+  <script defer src="main.js"></script></head>
+  <body>
+    <header>
+      <h1>Weather</h1>
+      <form action="" method="post">
+        <input type="text" name="location-input" id="location-input" />
+        <input
+          type="submit"
+          name="search-button"
+          id="search-button"
+          value="LOAD"
+        />
+      </form>
+    </header>
+    <main>
+      <div class="current-weather">
+        <p>Now</p>
+        <div class="basic-info">
+          <img src="" alt="" class="current-weather-icon" />
+          <p class="current-temp"></p>
+        </div>
+        <p class="conditions"></p>
+        <p class="feels-like"></p>
+        <ul>
+          <li class="uv-index">
+            <span class="bold">UV Index </span>
+            <span class="value"></span>
+          </li>
+          <li class="humidity">
+            <span class="bold">Humidity</span>
+            <span class="value"></span> %
+          </li>
+          <li class="wind">
+            <span class="bold">Wind</span> <span class="value"></span>
+          </li>
+          <li class="precip-prob">
+            <span class="bold">Precipation probability</span>
+            <span class="value"></span> %
+          </li>
+        </ul>
+      </div>
+      <div class="ten-day-weather"></div>
+    </main>
+  </body>
+</html>
