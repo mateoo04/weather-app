@@ -69,16 +69,14 @@ function formatDate(dateString) {
 function setBackgroundColor(weather) {
   const main = document.querySelector('main');
   const header = document.querySelector('header');
+  const body = document.querySelector('body');
 
   if (weather === 'partly-cloudy-day' || weather === 'clear-day') {
-    main.style.backgroundColor = '#1096e3';
-    header.style.backgroundColor = '#1096e3';
+    body.style.background = '#1096e3';
   } else if (weather === 'partly-cloudy-night' || weather === 'clear-night') {
-    main.style.backgroundColor = '#005a9e';
-    header.style.backgroundColor = '#005a9e';
+    body.style.background = '#005a9e';
   } else {
-    main.style.backgroundColor = '#7a1c94';
-    header.style.backgroundColor = '#7a1c94';
+    body.style.background = '#7a1c94';
   }
 }
 
@@ -96,6 +94,37 @@ function switchUnit(chosenUnit) {
   displayWeather();
 }
 
+const getGif = async function getAppropriateGifForWeather(weather) {
+  try {
+    const response = await fetch(
+      `https://api.giphy.com/v1/gifs/translate?api_key=9A6HIUxYMMcj68L4wiXV1weChgm4dG4v&s=${weather}`,
+      { mode: 'cors' }
+    );
+
+    const parsedResponse = await response.json();
+
+    return parsedResponse.data.images.fixed_height.url;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+function addGif(weather, element) {
+  let weatherDescription = '';
+
+  if (weather === 'clear-day') {
+    weatherDescription = 'sunny';
+  } else if (weather === 'clear-night') {
+    weatherDescription = 'night-sky';
+  } else {
+    weatherDescription = weather;
+  }
+
+  getGif(weatherDescription).then((url) => {
+    element.src = url;
+  });
+}
+
 const getData = async function getWeatherData() {
   const response = await fetch(
     `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/next10days?key=JV3JYYEPPXM5J6NXHJZ5UF3FY&unitGroup=${unit}&include=current%2Cdays&elements=datetime,icon,temp,tempmax,tempmin,precipprob,uvindex,feelslike,humidity,windspeed,conditions`,
@@ -104,8 +133,6 @@ const getData = async function getWeatherData() {
 
   const parsedResponse = await response.json();
 
-  console.log(parsedResponse);
-
   return {
     address: parsedResponse.resolvedAddress,
     days: parsedResponse.days,
@@ -113,110 +140,130 @@ const getData = async function getWeatherData() {
   };
 };
 
-function displayWeather() {
+function displayCurrentWeather(currentData) {
+  const currentWeatherContainer = document.querySelector('.current-weather');
+  currentWeatherContainer.innerHTML = '';
+
+  const nowElement = document.createElement('p');
+  nowElement.textContent = 'Now';
+  nowElement.classList.add('bold');
+
+  const basicInfo = document.createElement('div');
+  basicInfo.classList.add('basic-info');
+
+  const currentWeatherIcon = document.createElement('img');
+  currentWeatherIcon.classList.add('current-weather-icon');
+  currentWeatherIcon.src = getIcon(currentData.icon);
+
+  const currentTemp = document.createElement('p');
+  currentTemp.classList.add('current-temp');
+  currentTemp.textContent = currentData.temp + '°';
+
+  basicInfo.append(currentWeatherIcon, currentTemp);
+
+  const currentConditions = document.createElement('p');
+  currentConditions.classList.add('conditions', 'bold');
+  currentConditions.textContent = currentData.conditions;
+
+  const currentFeelsLike = document.createElement('p');
+  currentFeelsLike.textContent = 'Feels like ' + currentData.feelslike + '°';
+
+  const dataList = document.createElement('ul');
+
+  const dataArray = [
+    { title: 'UV Index', data: currentData.uvindex },
+    { title: 'Humidity', data: currentData.humidity + '%' },
+    {
+      title: 'Wind',
+      data: currentData.windspeed + (unit === 'metric' ? ' km/h' : ' mi/h'),
+    },
+    {
+      title: 'Precipation probability',
+      data: currentData.precipprob + '%',
+    },
+  ];
+
+  dataArray.forEach((item) => {
+    const listItem = document.createElement('li');
+
+    const itemTitle = document.createElement('span');
+    itemTitle.classList.add('bold');
+    itemTitle.textContent = item.title;
+
+    listItem.append(itemTitle, ' ', item.data);
+
+    dataList.append(listItem);
+  });
+
+  const gifImg = document.createElement('img');
+  gifImg.classList.add('gif');
+  try {
+    addGif(currentData.icon, gifImg);
+  } catch (error) {
+    console.log('Error while loading gif', error);
+  }
+
+  currentWeatherContainer.append(
+    nowElement,
+    basicInfo,
+    currentConditions,
+    currentFeelsLike,
+    dataList,
+    gifImg
+  );
+
+  setBackgroundColor(currentData.icon);
+}
+
+function diplayDailyWeather(days) {
   const tenDayWeatherContainer = document.querySelector('.ten-day-weather');
   tenDayWeatherContainer.innerHTML = '';
+
+  days.forEach((item) => {
+    const day = document.createElement('div');
+    day.classList.add('day-item');
+
+    const icon = document.createElement('img');
+    icon.src = getIcon(item.icon);
+
+    const date = document.createElement('p');
+    date.textContent = formatDate(item.datetime);
+
+    const temperature = document.createElement('p');
+    temperature.classList.add('temperature');
+    temperature.textContent = item.tempmax + '°/';
+    const minTemp = document.createElement('span');
+    minTemp.classList.add('min-temp');
+    minTemp.textContent = item.tempmin + '°';
+    temperature.append(minTemp);
+
+    day.append(icon, date, temperature);
+
+    tenDayWeatherContainer.append(day);
+  });
+}
+
+function displayWeather() {
+  const loader = document.querySelector('.loader');
+  loader.style.display = 'block';
 
   //10 day weather
   getData()
     .then((data) => {
       locationInput.value = data.address;
 
-      data.days.forEach((item) => {
-        const day = document.createElement('div');
-        day.classList.add('day-item');
+      loader.style.display = 'none';
 
-        const icon = document.createElement('img');
-        icon.src = getIcon(item.icon);
-
-        const date = document.createElement('p');
-        date.textContent = formatDate(item.datetime);
-
-        const temperature = document.createElement('p');
-        temperature.classList.add('temperature');
-        temperature.textContent = item.tempmax + '°/';
-        const minTemp = document.createElement('span');
-        minTemp.classList.add('min-temp');
-        minTemp.textContent = item.tempmin + '°';
-        temperature.append(minTemp);
-
-        day.append(icon, date, temperature);
-
-        tenDayWeatherContainer.append(day);
-      });
-
-      //current weather
-      const currentWeatherContainer =
-        document.querySelector('.current-weather');
-      currentWeatherContainer.innerHTML = '';
-
-      const nowElement = document.createElement('p');
-      nowElement.textContent = 'Now';
-      nowElement.classList.add('bold');
-
-      const basicInfo = document.createElement('div');
-      basicInfo.classList.add('basic-info');
-
-      const currentWeatherIcon = document.createElement('img');
-      currentWeatherIcon.classList.add('current-weather-icon');
-      currentWeatherIcon.src = getIcon(data.current.icon);
-
-      const currentTemp = document.createElement('p');
-      currentTemp.classList.add('current-temp');
-      currentTemp.textContent = data.current.temp + '°';
-
-      basicInfo.append(currentWeatherIcon, currentTemp);
-
-      const currentConditions = document.createElement('p');
-      currentConditions.classList.add('conditions', 'bold');
-      currentConditions.textContent = data.current.conditions;
-
-      const currentFeelsLike = document.createElement('p');
-      currentFeelsLike.textContent =
-        'Feels like ' + data.current.feelslike + '°';
-
-      const dataList = document.createElement('ul');
-
-      const dataArray = [
-        { title: 'UV Index', data: data.current.uvindex },
-        { title: 'Humidity', data: data.current.humidity + '%' },
-        {
-          title: 'Wind',
-          data:
-            data.current.windspeed + (unit === 'metric' ? ' km/h' : ' mi/h'),
-        },
-        {
-          title: 'Precipation probability',
-          data: data.current.precipprob + '%',
-        },
-      ];
-
-      dataArray.forEach((item) => {
-        const listItem = document.createElement('li');
-
-        const itemTitle = document.createElement('span');
-        itemTitle.classList.add('bold');
-        itemTitle.textContent = item.title;
-
-        listItem.append(itemTitle, ' ', item.data);
-
-        dataList.append(listItem);
-      });
-
-      currentWeatherContainer.append(
-        nowElement,
-        basicInfo,
-        currentConditions,
-        currentFeelsLike,
-        dataList
-      );
-
-      setBackgroundColor(data.current.icon);
+      diplayDailyWeather(data.days);
+      displayCurrentWeather(data.current);
     })
     .catch((error) => {
       console.log(error);
       document.querySelector('.message-dialog p').textContent =
         'An error occured while loading weather data.';
+
+      loader.style.display = 'none';
+
       messageDialog.showModal();
     });
 }
