@@ -35,8 +35,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
-  mode: 'development',
-  devtool: 'inline-source-map',
+  mode: 'production',
+  devtool: 'source-map',
   devServer: {
     static: './dist',
     watchFiles: ['src/*.*'],
