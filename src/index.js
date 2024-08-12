@@ -8,6 +8,10 @@ import snow from './snow.svg';
 import fog from './fog.svg';
 import wind from './wind.svg';
 import cloudy from './cloudy.svg';
+import { format, isBefore, isToday, isTomorrow, addDays } from 'date-fns';
+
+const locationForm = document.querySelector('form');
+const locationInput = document.getElementById('location-input');
 
 let location = 'Zagreb';
 let unit = 'metric';
@@ -37,6 +41,26 @@ const getIcon = function getCorrespondingWeatherIcon(weather) {
   }
 };
 
+function formatDate(dateString) {
+  const sevenDaysFromToday = addDays(new Date(), 6);
+
+  const year = dateString.slice(0, 4);
+  const month = dateString.slice(5, 7) - 1;
+  const day = dateString.slice(8, 10);
+
+  const newDate = new Date(year, month, day);
+
+  if (isToday(newDate)) {
+    return 'Today';
+  } else if (isTomorrow(newDate)) {
+    return 'Tomorrow';
+  } else if (isBefore(newDate, sevenDaysFromToday)) {
+    return format(newDate, 'EEEE');
+  } else {
+    return format(newDate, 'do MMM y');
+  }
+}
+
 const getData = async function getWeatherData() {
   const response = await fetch(
     `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/next10days?key=JV3JYYEPPXM5J6NXHJZ5UF3FY&unitGroup=${unit}&include=current%2Cdays&elements=datetime,icon,temp,tempmax,tempmin,precipprob,uvindex,feelslike,humidity,windspeed,conditions`,
@@ -48,6 +72,7 @@ const getData = async function getWeatherData() {
   console.log(parsedResponse);
 
   return {
+    address: parsedResponse.resolvedAddress,
     days: parsedResponse.days,
     current: parsedResponse.currentConditions,
   };
@@ -55,9 +80,12 @@ const getData = async function getWeatherData() {
 
 function displayWeather() {
   const tenDayWeatherContainer = document.querySelector('.ten-day-weather');
+  tenDayWeatherContainer.innerHTML = '';
 
   //10 day weather
   getData().then((data) => {
+    locationInput.value = data.address;
+
     data.days.forEach((item) => {
       const day = document.createElement('div');
       day.classList.add('day-item');
@@ -66,7 +94,7 @@ function displayWeather() {
       icon.src = getIcon(item.icon);
 
       const date = document.createElement('p');
-      date.textContent = item.datetime;
+      date.textContent = formatDate(item.datetime);
 
       const temperature = document.createElement('p');
       temperature.classList.add('temperature');
@@ -103,3 +131,10 @@ function displayWeather() {
 }
 
 displayWeather();
+
+locationForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  location = locationInput.value;
+  displayWeather();
+});
