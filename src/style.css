@@ -68,6 +68,16 @@ header {
   padding: 18px 24px;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo img {
+  width: 32px;
+}
+
 #location-input,
 #load-button {
   padding: 12px 16px;
@@ -116,7 +126,8 @@ main {
 }
 
 .current-weather-icon {
-  width: max(256px, 40%);
+  width: 40%;
+  filter: invert(100%) brightness(100%);
 }
 
 .current-temp {
