@@ -25,15 +25,46 @@ img {
   display: block;
 }
 
+@media (max-width: 650px) {
+  main,
+  header {
+    flex-direction: column;
+  }
+
+  header {
+    align-items: center;
+  }
+
+  header h1 {
+    padding-bottom: 18px;
+  }
+
+  #location-input {
+    width: 200px;
+  }
+}
+
+@media (min-width: 650px) {
+  #location-input {
+    width: 300px;
+  }
+}
+
 html,
 body {
   color: #fff;
 }
 
+html,
+body,
+main {
+  min-height: 100%;
+}
+
 header {
   display: flex;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 18px 24px;
 }
 
 #location-input,
@@ -45,7 +76,6 @@ header {
 }
 
 #location-input {
-  width: 300px;
   margin-right: 6px;
   background-color: rgba(255, 255, 255, 0.5);
 }
@@ -148,4 +178,26 @@ ul {
 
 .min-temp {
   font-weight: normal;
+}
+
+.message-dialog {
+  background-color: #fff;
+  border: none;
+  border-radius: 20px;
+}
+
+.message-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message {
+  text-align: center;
+}
+
+.dismiss-dialog-button {
+  border: none;
+  border-radius: 20px;
+  padding: 6px;
 }

@@ -14,6 +14,8 @@ const locationForm = document.querySelector('form');
 const locationInput = document.getElementById('location-input');
 const celsius = document.querySelector('.celsius');
 const fahrenheit = document.querySelector('.fahrenheit');
+const messageDialog = document.querySelector('.message-dialog');
+const dismissDialogButton = document.querySelector('.dismiss-dialog-button');
 
 let location = 'Zagreb';
 let unit = 'metric';
@@ -116,53 +118,107 @@ function displayWeather() {
   tenDayWeatherContainer.innerHTML = '';
 
   //10 day weather
-  getData().then((data) => {
-    locationInput.value = data.address;
+  getData()
+    .then((data) => {
+      locationInput.value = data.address;
 
-    data.days.forEach((item) => {
-      const day = document.createElement('div');
-      day.classList.add('day-item');
+      data.days.forEach((item) => {
+        const day = document.createElement('div');
+        day.classList.add('day-item');
 
-      const icon = document.createElement('img');
-      icon.src = getIcon(item.icon);
+        const icon = document.createElement('img');
+        icon.src = getIcon(item.icon);
 
-      const date = document.createElement('p');
-      date.textContent = formatDate(item.datetime);
+        const date = document.createElement('p');
+        date.textContent = formatDate(item.datetime);
 
-      const temperature = document.createElement('p');
-      temperature.classList.add('temperature');
-      temperature.textContent = item.tempmax + '°/';
-      const minTemp = document.createElement('span');
-      minTemp.classList.add('min-temp');
-      minTemp.textContent = item.tempmin + '°';
-      temperature.append(minTemp);
+        const temperature = document.createElement('p');
+        temperature.classList.add('temperature');
+        temperature.textContent = item.tempmax + '°/';
+        const minTemp = document.createElement('span');
+        minTemp.classList.add('min-temp');
+        minTemp.textContent = item.tempmin + '°';
+        temperature.append(minTemp);
 
-      day.append(icon, date, temperature);
+        day.append(icon, date, temperature);
 
-      tenDayWeatherContainer.append(day);
+        tenDayWeatherContainer.append(day);
+      });
+
+      //current weather
+      const currentWeatherContainer =
+        document.querySelector('.current-weather');
+      currentWeatherContainer.innerHTML = '';
+
+      const nowElement = document.createElement('p');
+      nowElement.textContent = 'Now';
+      nowElement.classList.add('bold');
+
+      const basicInfo = document.createElement('div');
+      basicInfo.classList.add('basic-info');
+
+      const currentWeatherIcon = document.createElement('img');
+      currentWeatherIcon.classList.add('current-weather-icon');
+      currentWeatherIcon.src = getIcon(data.current.icon);
+
+      const currentTemp = document.createElement('p');
+      currentTemp.classList.add('current-temp');
+      currentTemp.textContent = data.current.temp + '°';
+
+      basicInfo.append(currentWeatherIcon, currentTemp);
+
+      const currentConditions = document.createElement('p');
+      currentConditions.classList.add('conditions', 'bold');
+      currentConditions.textContent = data.current.conditions;
+
+      const currentFeelsLike = document.createElement('p');
+      currentFeelsLike.textContent =
+        'Feels like ' + data.current.feelslike + '°';
+
+      const dataList = document.createElement('ul');
+
+      const dataArray = [
+        { title: 'UV Index', data: data.current.uvindex },
+        { title: 'Humidity', data: data.current.humidity + '%' },
+        {
+          title: 'Wind',
+          data:
+            data.current.windspeed + (unit === 'metric' ? ' km/h' : ' mi/h'),
+        },
+        {
+          title: 'Precipation probability',
+          data: data.current.precipprob + '%',
+        },
+      ];
+
+      dataArray.forEach((item) => {
+        const listItem = document.createElement('li');
+
+        const itemTitle = document.createElement('span');
+        itemTitle.classList.add('bold');
+        itemTitle.textContent = item.title;
+
+        listItem.append(itemTitle, ' ', item.data);
+
+        dataList.append(listItem);
+      });
+
+      currentWeatherContainer.append(
+        nowElement,
+        basicInfo,
+        currentConditions,
+        currentFeelsLike,
+        dataList
+      );
+
+      setBackgroundColor(data.current.icon);
+    })
+    .catch((error) => {
+      console.log(error);
+      document.querySelector('.message-dialog p').textContent =
+        'An error occured while loading weather data.';
+      messageDialog.showModal();
     });
-
-    //current weather
-    const currentWeatherIcon = document.querySelector('.current-weather-icon');
-    const currentTemp = document.querySelector('.current-temp');
-    const currentConditions = document.querySelector('.conditions');
-    const currentFeelsLike = document.querySelector('.feels-like');
-    const currentUv = document.querySelector('.uv-index .value');
-    const currentHumdity = document.querySelector('.humidity .value');
-    const currentWind = document.querySelector('.wind .value');
-    const currentPrecipProb = document.querySelector('.precip-prob .value');
-
-    currentWeatherIcon.src = getIcon(data.current.icon);
-    currentTemp.textContent = data.current.temp + '°';
-    currentConditions.textContent = data.current.conditions;
-    currentFeelsLike.textContent = data.current.feelslike;
-    currentUv.textContent = data.current.uvindex;
-    currentHumdity.textContent = data.current.humidity;
-    currentWind.textContent = data.current.windspeed;
-    currentPrecipProb.textContent = data.current.precipprob;
-
-    setBackgroundColor(data.current.icon);
-  });
 }
 
 locationForm.addEventListener('submit', (event) => {
@@ -178,6 +234,10 @@ celsius.addEventListener('click', () => {
 
 fahrenheit.addEventListener('click', () => {
   switchUnit('us');
+});
+
+dismissDialogButton.addEventListener('click', () => {
+  messageDialog.close();
 });
 
 switchUnit('metric');
